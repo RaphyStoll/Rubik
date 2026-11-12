@@ -13,16 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  commitlint:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          # commitlint needs the whole PR history, not just the merge commit.
-          fetch-depth: 0
-      - uses: wagoid/commitlint-github-action@v6
-
   rust:
     runs-on: ubuntu-latest
     env:

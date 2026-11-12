@@ -1,0 +1,33 @@
+name: pr-title
+
+# PRs are squash-merged: the PR title becomes the commit on main that
+# semantic-release reads, so it is the one message that must be conventional.
+on:
+  pull_request:
+    # `edited` re-runs the check when the title is renamed.
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save --no-package-lock @commitlint/cli@21 @commitlint/config-conventional@21
+      # The title goes through an env var, never interpolated into the script,
+      # so a crafted title cannot inject shell commands.
+      - name: Lint PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | npx --no-install commitlint --verbose
