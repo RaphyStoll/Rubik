@@ -6,54 +6,54 @@ edition = "2024"
 [dependencies]
 
 [profile.dev]
-# debug : quelles infos de debug générer. Elles coûtent cher à lier, et l'édition
-# des liens est refaite à chaque modification, même d'une ligne.
-#   true               -> tout : variables, types, inspection dans un débogueur (défaut)
-#   "line-tables-only" -> seulement les numéros de ligne : backtraces lisibles,
-#                         plus d'inspection des variables, édition des liens plus rapide
-#   false              -> rien : le plus rapide, backtraces sans numéros de ligne
+# debug: which debug info to generate. It is expensive to link, and linking
+# is redone on every change, even a one-line one.
+#   true               -> everything: variables, types, debugger inspection (default)
+#   "line-tables-only" -> line numbers only: readable backtraces,
+#                         no variable inspection, faster linking
+#   false              -> nothing: fastest, backtraces without line numbers
 debug = "line-tables-only"
 
-# Dépendances optimisées en dev ("*" = toutes les dépendances, pas notre crate).
-# Elles ne sont compilées qu'une fois puis mises en cache : notre code reste en
-# opt-level 0 (recompilation rapide) mais les dépendances tournent à vitesse normale.
-#   0 -> aucune optimisation (défaut)
-#   1 -> optimisations de base
-#   2 -> bon compromis temps de compilation / vitesse
-#   3 -> vitesse maximale, première compilation plus longue
+# Optimized dependencies in dev ("*" = all dependencies, not our crate).
+# They are compiled once and then cached: our code stays at
+# opt-level 0 (fast rebuilds) but dependencies run at normal speed.
+#   0 -> no optimization (default)
+#   1 -> basic optimizations
+#   2 -> good trade-off between compile time and speed
+#   3 -> maximum speed, longer first build
 [profile.dev.package."*"]
 opt-level = 2
 
 [profile.release]
-# strip : quelles informations retirer du binaire final.
-#   "none"      -> on garde tout (le plus gros binaire)
-#   "debuginfo" -> retire les infos de debug détaillées (défaut en release)
-#   true        -> retire aussi les noms de fonctions (= "symbols") : plus petit,
-#                  mais une backtrace affichera des adresses au lieu des noms
+# strip: which information to remove from the final binary.
+#   "none"      -> keep everything (largest binary)
+#   "debuginfo" -> remove detailed debug info (release default)
+#   true        -> also remove function names (= "symbols"): smaller,
+#                  but a backtrace will show addresses instead of names
 strip = true
 
-# lto : optimisation de tout le programme au moment de l'édition des liens.
-#   false  -> LTO seulement à l'intérieur de chaque crate (défaut)
-#   "thin" -> LTO entre crates, compromis rapide
-#   true   -> LTO complète (= "fat") : binaire plus petit et plus rapide,
-#             mais l'étape `cargo build` est plus longue (non couverte par le cache de cargo-chef)
+# lto: whole-program optimization at link time.
+#   false  -> LTO only within each crate (default)
+#   "thin" -> cross-crate LTO, fast trade-off
+#   true   -> full LTO (= "fat"): smaller and faster binary,
+#             but the `cargo build` step is longer (not covered by the cargo-chef cache)
 lto = true
 
-# codegen-units : en combien de morceaux chaque crate est découpé pour compiler en parallèle.
-#   16 -> compilation parallèle, rapide (défaut)
-#   1  -> le compilateur voit le crate entier : binaire plus petit et plus rapide,
-#         compilation plus lente
+# codegen-units: how many chunks each crate is split into for parallel compilation.
+#   16 -> parallel compilation, fast (default)
+#   1  -> the compiler sees the whole crate: smaller and faster binary,
+#         slower compilation
 codegen-units = 1
 
-# panic : ce qui se passe quand le programme panique.
-#   "unwind" -> remonte la pile en exécutant les Drop, catch_unwind possible (défaut)
-#   "abort"  -> arrêt immédiat : binaire plus petit, mais plus de catch_unwind
-#               ni de Drop pendant un panic (change le comportement du programme)
+# panic: what happens when the program panics.
+#   "unwind" -> unwinds the stack running Drop, catch_unwind possible (default)
+#   "abort"  -> immediate stop: smaller binary, but no catch_unwind
+#               and no Drop during a panic (changes program behavior)
 panic = "unwind"
 
-# opt-level : ce que le compilateur cherche à optimiser.
-#   3   -> vitesse maximale (défaut)
-#   "s" -> taille, en gardant une bonne vitesse
-#   "z" -> taille maximale, au prix de la vitesse
-#   C'est le seul vrai compromis taille/vitesse de ce profil.
+# opt-level: what the compiler optimizes for.
+#   3   -> maximum speed (default)
+#   "s" -> size, while keeping good speed
+#   "z" -> smallest size, at the cost of speed
+#   This is the only real size/speed trade-off in this profile.
 opt-level = 3
