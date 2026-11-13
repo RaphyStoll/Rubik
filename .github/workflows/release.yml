@@ -1,0 +1,40 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # semantic-release needs the full history and tags to compute the next version.
+          fetch-depth: 0
+          persist-credentials: false
+      # cargo is needed by the prepare step to refresh Cargo.lock after the bump.
+      - uses: dtolnay/rust-toolchain@stable
+      # The action npm-installs semantic-release and its plugins on every run;
+      # caching ~/.npm turns that into a local install.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-semantic-release-${{ hashFiles('.github/workflows/release.yml') }}
+      - uses: cycjimmy/semantic-release-action@v6
+        with:
+          extra_plugins: |
+            @semantic-release/changelog@6
+            @semantic-release/exec@7
+            @semantic-release/git@10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

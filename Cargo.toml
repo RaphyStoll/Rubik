@@ -1,0 +1,59 @@
+[package]
+name = "rubik"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[profile.dev]
+# debug: which debug info to generate. It is expensive to link, and linking
+# is redone on every change, even a one-line one.
+#   true               -> everything: variables, types, debugger inspection (default)
+#   "line-tables-only" -> line numbers only: readable backtraces,
+#                         no variable inspection, faster linking
+#   false              -> nothing: fastest, backtraces without line numbers
+debug = "line-tables-only"
+
+# Optimized dependencies in dev ("*" = all dependencies, not our crate).
+# They are compiled once and then cached: our code stays at
+# opt-level 0 (fast rebuilds) but dependencies run at normal speed.
+#   0 -> no optimization (default)
+#   1 -> basic optimizations
+#   2 -> good trade-off between compile time and speed
+#   3 -> maximum speed, longer first build
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+# strip: which information to remove from the final binary.
+#   "none"      -> keep everything (largest binary)
+#   "debuginfo" -> remove detailed debug info (release default)
+#   true        -> also remove function names (= "symbols"): smaller,
+#                  but a backtrace will show addresses instead of names
+strip = true
+
+# lto: whole-program optimization at link time.
+#   false  -> LTO only within each crate (default)
+#   "thin" -> cross-crate LTO, fast trade-off
+#   true   -> full LTO (= "fat"): smaller and faster binary,
+#             but the `cargo build` step is longer (not covered by the cargo-chef cache)
+lto = true
+
+# codegen-units: how many chunks each crate is split into for parallel compilation.
+#   16 -> parallel compilation, fast (default)
+#   1  -> the compiler sees the whole crate: smaller and faster binary,
+#         slower compilation
+codegen-units = 1
+
+# panic: what happens when the program panics.
+#   "unwind" -> unwinds the stack running Drop, catch_unwind possible (default)
+#   "abort"  -> immediate stop: smaller binary, but no catch_unwind
+#               and no Drop during a panic (changes program behavior)
+panic = "unwind"
+
+# opt-level: what the compiler optimizes for.
+#   3   -> maximum speed (default)
+#   "s" -> size, while keeping good speed
+#   "z" -> smallest size, at the cost of speed
+#   This is the only real size/speed trade-off in this profile.
+opt-level = 3
